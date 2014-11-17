@@ -8,15 +8,25 @@ t = 1:44100;
 FFT_size = 512;
 bin_w = Fs/FFT_size;
 
+% Global parameters
+W_SIZE = 512;
+FFT_SIZE = 512;
+W_TYPE = 0;
+
 % Try a sine wave at centre of a bin/channel
 sine1 = sin(2*pi*3.5*bin_w*t/Fs);
-%process sine waves
-sine1_p =0;
-
+%[wave1, Fs] = audioread('vocal2.wav');
+%sine1 = wave1';
 %play original, and then stretched:
 player = audioplayer(sine1, Fs);
 player.playblocking();
+
+%process sine waves
+sine1_proc = A2_func(sine1, FFT_SIZE, W_TYPE,W_SIZE,FFT_SIZE/4, 1);
+player = audioplayer(sine1_proc, Fs);
+player.playblocking();
 %
+return;
 
 % Now, try a sine wave at edge of a bin/channel
 sine2 = sin(2*pi*3*bin_w*t/Fs);
