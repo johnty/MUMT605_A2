@@ -1,4 +1,4 @@
-function [output_wave] = A2_func(input_wave, N, window_type, window_size, hop_size, time_str)
+function [output_wave] = A2_funcB(input_wave, N, window_type, window_size, hop_size, time_str)
 % Johnty Wang - MUMT605 Assignment 2
 % A2_func generates an output time stretched waveform using the phase vocoder method in Part 1 of MillerPuckette's "Phase-locked Vocoder" paper.
 %  Parameters:
@@ -9,6 +9,7 @@ function [output_wave] = A2_func(input_wave, N, window_type, window_size, hop_si
 %     0 - hamming
 %     1 - hanning
 %     2 - kaiser
+%     3 - rectangular
 %  window_size - the length of window
 %  hope_size - the size of hops between each analysis STFT
 %  time_str - the amount of time stretch
@@ -25,6 +26,8 @@ switch window_type
         wind = hanning(window_size);
     case 2
         wind = kaiser(window_size);
+    case 3
+        wind = ones(window_size, 1);
     otherwise
         wind = hanning(N);
 end
@@ -44,7 +47,7 @@ Wk = zeros(N, num_stfts);
 
 %now we go through and fill it with windowed, FFT'ed values
 for k=1:num_stfts
-    %frame_begin = round (1 + (k-1) * hop_size - N/2)
+    %frame_begin = 1 + (k-1) * hop_size - N/2
     %frame_end = frame_begin + N - 1
     %x = getTimeStartEnd(input_wave, frame_begin, frame_end); %windowed time series in frame
     frame_begin = 1 + (k-1) * hop_size;
@@ -53,10 +56,10 @@ for k=1:num_stfts
     x_w = x.*wind';
     X_w = fft(x_w); %FFT the windowed time series
     X(:,k) = X_w'; %place the transpose into the k_th column
-    if (k ~= 1)
-        Wk(:,k) = ( angle(X_w') - Wk(:,k-1) ) / hop_size;
-    end
+
 end
+
+
 
 %we now have all the "analysis frames" needed in the array X.
 % now we need to get Y, which is the same array but with corrected
@@ -66,19 +69,17 @@ end
 % maintained...
 
 Y = zeros(size(X)); % Y is same size as X;
-%Y = X;
+Y = X;
 
 for k=1:num_stfts
     if (k==1) % initial bin: just use first frame from analysis!
         Y_ui = X(:,k);
-        Y(:,k) = Y_ui; %bootstrap first value here...
     else
         %equation on pg 2, bottom 1st column:
         Y_ui = X(:,k).*Y(:,k-1)./X(:,k-1)./(abs(Y(:,k-1)./X(:,k-1)));
-        
-        %put array:
-        Y(:,k) = Y_ui;
+        %put into output array:
     end
+    Y(:,k) = Y_ui;
 end
 
 
@@ -107,12 +108,13 @@ hop_size
 hop_size_synth
 
 for k=1:num_stfts
-    y = ifft(Y(:,k));
-    y_wind = y.*wind;
+    y = ifft(Y(:,k)'); %!!!!! the line that costed me nearly a week of work
+                        %!!!!! ifft(X') != ifft(X)' !!!!!!
+    y_wind = y.*wind';
     %the new time locations
-    frame_begin = 1 + (k-1)*hop_size_synth;
-    frame_end = frame_begin + N -1;
-    output_wave(frame_begin:frame_end) = output_wave(frame_begin:frame_end)+y_wind';
+    frame_begin = 1 + (k-1) * hop_size_synth;
+    frame_end = frame_begin + N - 1;    
+    output_wave(frame_begin:frame_end) = output_wave(frame_begin:frame_end)+y_wind;
 end;
 
 % normalize: (I may have ommitted a step somewhere, causing
@@ -120,10 +122,5 @@ end;
 % or is this expected behaviour?
 output_wave = output_wave./max(abs(output_wave));
 length(output_wave)
-
-subplot(3,1,2);
-plot(input_wave);
-subplot(3,1,3);
-plot(output_wave);
 
 
