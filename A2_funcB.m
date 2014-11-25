@@ -51,9 +51,12 @@ for k=1:num_stfts
     %frame_end = frame_begin + N - 1
     %x = getTimeStartEnd(input_wave, frame_begin, frame_end); %windowed time series in frame
     frame_begin = 1 + (k-1) * hop_size;
-    frame_end = frame_begin + N - 1;
+    frame_end = frame_begin + window_size - 1;
     x = input_wave(frame_begin:frame_end);
-    x_w = x.*wind';
+    x_w = x.*wind'; %apply window
+    if (N>window_size) %zero pad if FFT size larger than window size
+        x_w = [x_w zeros(1, N - window_size)];
+    end
     X_w = fft(x_w); %FFT the windowed time series
     X(:,k) = X_w'; %place the transpose into the k_th column
 
@@ -110,10 +113,11 @@ hop_size_synth
 for k=1:num_stfts
     y = ifft(Y(:,k)'); %!!!!! the line that costed me nearly a week of work
                         %!!!!! ifft(X') != ifft(X)' !!!!!!
-    y_wind = y.*wind';
+    %plot(y);                    
+    y_wind = y(1:window_size); % in case window_size < FFT size
     %the new time locations
     frame_begin = 1 + (k-1) * hop_size_synth;
-    frame_end = frame_begin + N - 1;    
+    frame_end = frame_begin + window_size - 1;    
     output_wave(frame_begin:frame_end) = output_wave(frame_begin:frame_end)+y_wind;
 end;
 

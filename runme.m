@@ -10,12 +10,12 @@ FFT_size = 512;
 bin_w = Fs/FFT_size;
 
 % Global parameters
-W_SIZE = 1024;
+W_SIZE = 512;
 FFT_SIZE = 1024;
 W_TYPE = 0;
 
 % Try a sine wave at centre of a bin/channel
-sine1 = sin(2*pi*3.5*bin_w.*t/Fs);
+sine1 = sin(2*pi*3.2*bin_w.*t/Fs);
 
 [wave1, Fs] = audioread('piano.wav');
 %sine1 = wave1';
@@ -26,7 +26,7 @@ player = audioplayer(sine1, Fs);
 player.playblocking();
 
 %process sine waves
-sine1_proc = A2_funcB(sine1, FFT_SIZE, W_TYPE, W_SIZE, FFT_SIZE/6, 1.1);
+sine1_proc = A2_funcB(sine1, FFT_SIZE, W_TYPE, W_SIZE, FFT_SIZE/4, 1.0);
 player = audioplayer(sine1_proc, Fs);
 audiowrite('input.wav', sine1, Fs);
 audiowrite('result.wav', sine1_proc, Fs);
