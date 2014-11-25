@@ -114,17 +114,20 @@ for k=1:num_stfts
     y = ifft(Y(:,k)'); %!!!!! the line that costed me nearly a week of work
                         %!!!!! ifft(X') != ifft(X)' !!!!!!
     %plot(y);                    
-    y_wind = y(1:window_size); % in case window_size < FFT size
+    y_wind = y(1:window_size);
     %the new time locations
     frame_begin = 1 + (k-1) * hop_size_synth;
     frame_end = frame_begin + window_size - 1;    
     output_wave(frame_begin:frame_end) = output_wave(frame_begin:frame_end)+y_wind;
 end;
 
-% normalize: (I may have ommitted a step somewhere, causing
-% the amplitudes to be larger than 1.0 with overlap/add...)
-% or is this expected behaviour?
-output_wave = output_wave./max(abs(output_wave));
+% normalize: hann window = 0.5*(OLA)
+%  e.g. for OLA of 4 (hope size = wind/4), we expect output is 2x input
+max_input = max(abs(input_wave))
+max_output = max(abs(output_wave))
+ratio = max_output/max_input % this should be 2 for hann window with 4x OLA
+output_wave = output_wave/ratio;
+
 length(output_wave)
 
 
