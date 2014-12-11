@@ -88,57 +88,6 @@ Looking at the original equation with $t_{r-1}-s_r  \neq 1$ (in other words, $H 
 
 }
 
-\item{
-For a given function
-
-\begin{align*}
-y(t) &= \left\lbrace\begin{array}{ll}
-x(t) & t\geq 0\\
-0 & \text{elsewhere}
-\end{array}\right.
-\end{align*}
-Then, based on the definition of | |:
-\begin{align*}
-y(|t|) &= \left\lbrace\begin{array}{ll}
-x(t) & t\geq 0\\
-x(-t) & t < 0
-\end{array}\right. \\
-\end{align*} 
-Therefore, for this particular example, we have:
-\begin{align*}
-x(t) &= s(t) + s(-t) \\ \\
-\text{from the property of the fourier transform:} \\
-\text{if } a(t) \rightarrow A(f) \\
-\text{then } a(-t) \rightarrow A(-f) \\ \\
-\text{so } x(t) \rightarrow X(f) \\
-\implies X(f) &= S(f) + S(-f)\\
-\implies  X(f) &= \dfrac{1}{\alpha - 2\pi j f} + \dfrac{1}{\alpha + 2\pi j f}\\
-&=  \dfrac{\alpha + 2\pi j f + \alpha - 2\pi j f}{(\alpha - 2\pi j f)(\alpha + 2\pi j f)}\\
-&= \dfrac{2\alpha}{\alpha^2 + 4\pi f^2}
-\end{align*}
-}
-\item{
-When we sample the spectrum $X(f)$ of the time series signal $x(t)$ using a dirac comb, it creates a ``periodized'' version of the signal, which can be expressed as:
-
- \begin{align*}
-X'(f) &= X(f)\sha_{T_0}(f) \\
-\text{where} \\
-\sha_{T_0}(f) &= \sum_{k=-\infty}^{\infty} \delta(f - k{T_0}) \\
-\implies X'(f) &= \dfrac{2\alpha}{\alpha^2 + 4\pi f^2}  \sum_{k=-\infty}^{\infty} \delta(f - k{T_0})
-\end{align*}
-}
-\item{
-From the above, we can see that $X'(f)$ is nonzero where $f = kT_0$, which means the amplitude of the $k$th harmonic can be expressed as:
-\begin{align*}
-\dfrac{2\alpha}{\alpha^2 + 4\pi k^2{T_0}^2}
-\end{align*}
-}
-\item{
-One advantage of this method is that the calculation is very simple - by exploiting the additive and time reversal properties of the fourier transform, we did not need to evaluate the integral for the |t| case.
-}
-
-\end{enumerate}
-
 \newpage
 
 \section*{Part 2}
@@ -154,11 +103,10 @@ For this part, I implemented a matlab function called \verb|A2_func| in Matlab, 
 The internal code comments provide explanation of the process, but the overall process is as follows:
 
 \begin{itemize}
-\item{Compute discrete spectrum}
-\item{Generate frequency independent wavetable with correct duty cycle from spectrum, that is otherwise independent of sample rate}
-\item{Produce frequency correct wavetable given sample rate, target frequency and fill up entire buffer corresponding to required duration of the synthesized output}
+\item{C}
 \end{itemize}
 
+\end{enumerate}
 
 \subsection*{Putting it together}
 Below is a file listing of the submitted assignment:
@@ -166,7 +114,7 @@ Below is a file listing of the submitted assignment:
 \item \verb|A2_func|: the main time stretching function
 \item \verb|runme.m|: the tester application that does the following:
 \begin{enumerate}
-	\item 	Loads sample waveform from file
+	\item 	Generate sine wave samples, as well as a more complex waveform from file
 	\item   Calls the function with a few different values of time stretch
 	\item	Plays back original, and time stretched versions
 \end{enumerate}
