@@ -11,7 +11,7 @@
 
 \title{MUMT605 Assignment 2}
 \author{Johnty Wang}
-\date{14 Nov 2014}
+\date{original due date: 14 Nov 2014\\submitted 12 Nov 2014}
 
 \begin{document}
 \maketitle
@@ -36,12 +36,12 @@ When $t - s = 1 = H$, we have:
 
 Now, since we're dealing with a sampled signal, we must have 
 
-$\omega[k] < \pi$ to satisfy the Nyquist criterion and since $t - s = 1$, it is impossible for a signal below this limit to increment more than $2\pi$ in the timespan of \textbf{one single sample} and still be adequately represented without aliasing, so the only possible value of p is $zero$.
+$\omega[k] < \pi$ to satisfy the Nyquist criterion and since $t - s = 1$, it is impossible for a signal below this limit to increment more than $2\pi$ in the timespan of \textbf{one single sample} and still be adequately represented without aliasing, so the only possible value of p is $zero$ for hop size 1.
 }
 
 \item[2]{
 
-As described in the paper, we need a hop size $H \leq \dfrac{N}{2K}$ where $K$ is the bandwidth (in samples) of the window and $N$ is the window size (in samples). Putting in $t - s = H$ and $C_w = K$ and $M$ for window size gives
+As described in the paper, we need a hop size $H \leq \dfrac{M}{2K}$ where $K$ is the bandwidth (in samples) of the window and $N$ is the window size (in samples). Putting in $t - s = H$ and $C_w = K$ and $M$ for window size the maximum value of
 
 \begin{align*}
 H \leq \dfrac{M}{2C_w}
@@ -57,67 +57,83 @@ This condition can also be satisfied when $t - s$ is 2$\pi$ multiples of a given
 Since $H = u_r-u_{r-1}$ and is the amount of time that a particular frequency $\omega(u_r,k)$ will have evolve for since the previous phase $Arg Y (u_r,k)$, we have simply:
 
 \begin{align*}
-\lambda(u_r, k) = Arg Y (u_r,k) +H\omega(u_r,k)
+\lambda(u_r, k) = Arg Y (u_{r-1},k) +H\omega(u_r,k)
 \end{align*}
 
 }
 
 \item[4]{
 
-We still need to maintain the bandwidth-related limit from 2.) above, and in the stretched case, we essentially have a larger gap in the hop given by $\alpha$. Hence, we have the following:
-\begin{align*}
-\alpha t_r - s_r \leq \dfrac{M}{2C_w}
-\end{align*}
+We need to ensure that any frequency contribution within a particular window's main bandwidth does not get leaked into the next frame when overlapped and added, so the amount that successful windowed versions can be copied back must not be closer than $\dfrac{K}{M}$ where $K$ is the bandwidth of the window and $M$ the window size.
 
 }
 
 \item[5]{
-
+$\alpha > \dfrac{1}{2}H$
 }
 
 \item[6]{
 
-Looking at the original equation with $t_{r-1}-s_r  \neq 1$ (in other words, $H \neq 1$:
-\begin{align*}
-\omega[k] = \dfrac{Arg X [t,k] - Arg X [s, k] + 2\pi p}{t_r-s_r}\\
-\end{align*}
+I wasn't 100\% sure how to do this, but from my understanding there is an integer relationship between $H$, and $t_r-s_r$
 
 }
 
 \item[7]{
+As shown in the paper, the angle of each bin $k$ in the output $Y$ is given by:
+\begin{align*}
+Arg Y[u_i, k] = Arg Y [u_{i-1},k] + Arg X [t_i, k] - Arg X [s_i, k] 
+\end{align*}
 
+For a complex number $C = a+ib$, $ArgC = arctan\dfrac{b}{a}$, and from the trig identity
+
+\begin{align*}
+arctan(\alpha) - arctan(\beta) = arctan(\dfrac{\alpha-\beta}{1+\alpha\beta})
+\end{align*}
+
+We can see that for two complex numbers $C1 = a+ib$ and $C2 = c+id$, the difference of their Args are, after some simple gymnastics involving fractions:
+
+\begin{align*}
+arctan(b/a) - arctan(d/c) = arctan(\dfrac{bc-ad}{ac+bd})
+\end{align*}
+
+And when you divide two complex numbers $C1 = a+ib$ and $C2 = c+id$, you have:
+
+\begin{align*}
+\dfrac{a+ib}{c+id} = \dfrac{(a+ib)(c-id)}{(c+id)(c-id)} = \dfrac{ac+bd+i(bc-ad)}{c^2+d^2}
+\end{align*}
+
+The angle of the result, is also $arctan(\dfrac{bc-ad}{ac+bd})$; which implies that the angle of the result of subtraction between two complex numbers is the same as the angle of the division of those two numbers. Similarly, addition would imply multiplication.
+
+Finally, given that the magnitude is simply taken from the current $X[t_i,k]$, we can see the result at Y is given by X at $t_i$, but with a angle increment (multiply) by the difference of angles between $Y[u_{i-1}]$ and $X[s_i]$ (division). The division by the absolute value of $Y[u_{i-1}$ and $X[s_i]$ normalizes the operation and insures no modification of the magnitude:
+
+\begin{align*}
+Y[u_i, k] = X [t_i,k]\left(\dfrac{Y[u_{i-1}, k]}{X[s_{i-1}, k]}\right)\left|\dfrac{Y[u_{i-1}, k]}{X[s_{i-1}, k]}\right|^{-1}
+\end{align*}
 }
+\end{enumerate}
 
 \newpage
 
 \section*{Part 2}
 
 \subsection*{Overview}
-For this part, I implemented a matlab function called \verb|A2_func| in Matlab, with its help/description as follows:
+For this part, I implemented the following files:
 
-\begin{verbatim}
-% code here
-% code here
-\end{verbatim}
-
-The internal code comments provide explanation of the process, but the overall process is as follows:
-
-\begin{itemize}
-\item{C}
-\end{itemize}
-
-\end{enumerate}
-
-\subsection*{Putting it together}
-Below is a file listing of the submitted assignment:
 \begin{itemize}
 \item \verb|A2_func|: the main time stretching function
 \item \verb|runme.m|: the tester application that does the following:
 \begin{enumerate}
 	\item 	Generate sine wave samples, as well as a more complex waveform from file
-	\item   Calls the function with a few different values of time stretch
+	\item   Calls the function with a few different input samples
 	\item	Plays back original, and time stretched versions
 \end{enumerate}
 \end{itemize}
+
+\subsection*{Some Notes}
+
+In the above method proposed by Puckette using a hop size of 1, it is possible to create time stretches where the fraction is composed of integer numerator and denominator values for the technique .However, to save computation it would also be possible to use hop sizes that are larger (but within the limit specified by the windowing), as in 6.) from part 1. This does bring in the constraint on the numerator value to that particular hop size. Also, the amount of input STFTs performed can be reduced by only computing the ones required at indices required for re-synthesis.
+
+I also attempted implementing the manual method of computing the output spectrum by unwrapping and accumulating the phase at the time stretched positions for each consecutive input STFT, and the code is documented and included in \verb|A2_func| as well. This method, while requiring a.)the phase unwrapping and b.)the recalculation of the complex values from phase and magnitude, does allow for higher resolutions of stretch at a relatively larger hop size. Of course, constraint by windowing still exists, and the actual stretch will be truncated by the nearest sample location where the time stretched version can be placed. Unfortunately, due to an implementation error that I spent a lot of time debugging, I have yet to find a functional solution, and perhaps spent way more time than I should have on it ;). Thanks for your patience!
+
 
 \end{document}

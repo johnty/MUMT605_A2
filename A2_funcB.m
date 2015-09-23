@@ -14,12 +14,12 @@ function [output_wave] = A2_funcB(input_wave, N, window_type, window_size, IN_SI
 %  hope_size - the size of hops between each analysis STFT
 %  time_str - the amount of time stretch
 
+
 time_str = OUT_SIZE/IN_SIZE
 hop_size = 1;
 
 N
 window_size
-hop_size = round(hop_size);
 
 output_wave = 0;
 switch window_type
@@ -35,9 +35,9 @@ switch window_type
         wind = hanning(window_size);
 end
 
-num_stfts = ceil(length(input_wave)/hop_size)
+num_stfts = ceil(length(input_wave)/hop_size);
 
-old_len = length(input_wave)
+old_len = length(input_wave);
 
 output_samples = floor(old_len*time_str);
 
@@ -86,29 +86,29 @@ Y = zeros(size(X)); % Y is same size as X;
 
 
 
-Y_ang_res_accum = zeros(N,1); %variable for holding accumulated angle
-
-%unwrap helper: an interger amount of this value is the potential
-%wrap-around amount for a frequency in a particular bin.
-unwrap_helper = ((0:N-1)*2*pi*hop_size/N)';
-
-Y_mag = zeros(size(X));
-prev_ang = zeros(size(X));
-%The manual way...
-for k=1:num_stfts
-    Y_mag = abs(X(:,k));
-    prev_ang = Y_ang_res_accum;
-    if (k==1) % for the first one, we just take the input
-        Y_ang_res_accum = angle(X(:,k));
-    else
-        Y_unwrapped = angle(X(:,k)) - prev_ang - unwrap_helper;
-        Y_unwrapped = Y_unwrapped - round(Y_unwrapped/(2*pi))*2*pi;
-        Y_unwrapped = (Y_unwrapped + unwrap_helper) * time_str;
-        Y_ang_res_accum = Y_ang_res_accum + Y_unwrapped;
-    end
-    Y_ui = Y_mag.*exp(1i*Y_ang_res_accum);
-    Y(:,k) = Y_ui; %store in output spectra array
-end
+% Y_ang_res_accum = zeros(N,1); %variable for holding accumulated angle
+% 
+% %unwrap helper: an interger amount of this value is the potential
+% %wrap-around amount for a frequency in a particular bin.
+% unwrap_helper = ((0:N-1)*2*pi*hop_size/N)';
+% 
+% Y_mag = zeros(size(X));
+% prev_ang = zeros(size(X));
+% %The manual way...
+% for k=1:num_stfts
+%     Y_mag = abs(X(:,k));
+%     prev_ang = Y_ang_res_accum;
+%     if (k==1) % for the first one, we just take the input
+%         Y_ang_res_accum = angle(X(:,k));
+%     else
+%         Y_unwrapped = angle(X(:,k)) - prev_ang - unwrap_helper;
+%         Y_unwrapped = Y_unwrapped - round(Y_unwrapped/(2*pi))*2*pi;
+%         Y_unwrapped = (Y_unwrapped + unwrap_helper) * time_str;
+%         Y_ang_res_accum = Y_ang_res_accum + Y_unwrapped;
+%     end
+%     Y_ui = Y_mag.*exp(1i*Y_ang_res_accum);
+%     Y(:,k) = Y_ui; %store in output spectra array
+% end
 
 use_puckette = true;
 % method from Puckette's paper; only works for t_i-s_i=u_i - u_i-1;
@@ -128,15 +128,7 @@ end
 
 % when we resynthesize, we place each inverse FFT at the stretched hop locations,
 % window, overlap and add into the time series at the new (stretched) locations
-
-%the new hop size is given by:
-hop_size_synth = round(hop_size * time_str);
-
-% since we have to round the hop size to an integer,
-% the actual time stretch is in fact:
-actual_stretch = hop_size_synth/hop_size
-
-new_len = (num_stfts)*OUT_SIZE/IN_SIZE + N
+new_len = ceil((num_stfts)*OUT_SIZE/IN_SIZE + 2*N)
 
 %the length of output is dependent on new hop size
 output_wave = zeros(1, new_len);
@@ -146,9 +138,6 @@ output_wave = zeros(1, new_len);
 
 %the length of output is dependent on new hop size
 output_wave = zeros(1, new_len);
-
-hop_size
-hop_size_synth
 
 for k=1:num_stfts/IN_SIZE-1
     y = ifft(Y(:,k)'); %!!!!! the line that cost me nearly a week of work
@@ -164,15 +153,15 @@ end;
 
 %because we appended extra bits at the end, lets truncate it
 %to the correct length
-output_wave = output_wave(1:output_samples);
+%output_wave = output_wave(1:output_samples);
 
 % normalize: hann window = 0.5*(OLA)
 %  e.g. for OLA of 4 (hope size = wind/4), we expect output is 2x input
-max_input = max(abs(input_wave))
-max_output = max(abs(output_wave))
-ratio = max_output/max_input % this should be 2 for hann window with 4x OLA
+max_input = max(abs(input_wave));
+max_output = max(abs(output_wave));
+ratio = max_output/max_input; % this should be 2 for hann window with 4x OLA
 output_wave = output_wave/ratio;
 
-length(output_wave)
+length(output_wave);
 
 
